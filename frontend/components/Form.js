@@ -31,6 +31,8 @@ export default function Form() {
   const [size, setSize] = useState('');
   const [sizeErr, setSizeErr] = useState('');
 
+  const [toppingsList, setToppingsList] = useState([]);
+
   let handleNameEntry = (nameEntry) => {
     setFullName(nameEntry.target.value);
     formSchema.validate({fullName: nameEntry.target.value}).then(setNameErr('')).catch((err) => {setNameErr(err.message)});
@@ -41,6 +43,25 @@ export default function Form() {
     console.log(sizeEntry.target.value);
     setSize(sizeEntry.size);
     formSchema.validate({size: sizeEntry.target.value})    .then(setSizeErr('')).catch((err) => {setSizeErr(err.message)});
+  }
+
+
+  let handleToppingEntry = (toppingEntry) => {
+    const toppingInput = document.getElementById('toppingInput');
+
+      console.log(toppingInput.children.length);
+      console.log('.................................');
+
+      const result = [];
+
+      for(let i = 0; i < toppingInput.children.length; i++) {
+        let currentCheckbox = toppingInput.children[i].querySelector('input'); 
+        if(currentCheckbox.checked) {
+          result.push(currentCheckbox.name);
+        }
+      }
+      console.log(result);
+      setToppingsList(result);
   }
 
   return (
@@ -70,14 +91,17 @@ export default function Form() {
         {sizeErr && <div className='error'>{sizeErr}</div>}
       </div>
 
-      <div className="input-group">
-        {/* 👇 Maybe you could generate the checkboxes dynamically */}
-        {toppings.map((topping) => 
-        (<label           key={topping.topping_id}>
-          <input name={topping.text} type="checkbox" />
-          {topping.text} <br/> 
-          </label>)
-        )
+      <div className="input-group" id="toppingInput">
+        {
+          toppings.map((topping) => 
+              (
+                <label key={topping.topping_id} onChange={handleToppingEntry}>
+                  <input name={topping.topping_id} type="checkbox" />
+                  {topping.text} 
+                  <br/> 
+                </label>
+              )
+            )
         }
       </div>
       {/* 👇 Make sure the submit stays disabled until the form validates! */}
