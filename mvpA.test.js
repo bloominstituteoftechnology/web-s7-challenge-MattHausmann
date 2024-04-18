@@ -240,4 +240,6 @@ describe('Sprint 7 Challenge Codegrade Tests', () => {
       await waitFor(() => {
         expect(screen.queryByText(validationError, queryOptions)).not.toBeInTheDocument()
       }, waitForOptions)
-   
+    })
+  })
+})   
