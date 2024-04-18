@@ -1,6 +1,5 @@
 /*
 Codegrade Setup
-
 1- Global setup script
 curl -fsSL https://deb.nodesource.com/setup_16.x | sudo -E bash - && sudo apt-get install -y nodejs; cg-jest install; npm i -g jest@29.6.4
 2- Per-student setup script
@@ -149,7 +148,38 @@ describe('Sprint 7 Challenge Codegrade Tests', () => {
       fireEvent.click(screen.getByText('Order', queryOptions))
       getFormElements()
     })
+    test('[9] Submit only enables if `fullName` and `size` pass validation', async () => {
+      expect(submit).toBeDisabled() // initial state
+      await waitFor(() => {
+        fireEvent.change(name, { target: { value: '123' } })
+        fireEvent.change(size, { target: { value: 'S' } })
+      }, waitForOptions)
+      await waitFor(() => expect(submit).toBeEnabled())
 
+      await waitFor(() => {
+        fireEvent.change(name, { target: { value: '12' } }) // BAD VALUE
+        fireEvent.change(size, { target: { value: 'S' } })
+      }, waitForOptions)
+      await waitFor(() => expect(submit).toBeDisabled())
+
+      await waitFor(() => {
+        fireEvent.change(name, { target: { value: '123' } })
+        fireEvent.change(size, { target: { value: 'M' } })
+      }, waitForOptions)
+      await waitFor(() => expect(submit).toBeEnabled())
+
+      await waitFor(() => {
+        fireEvent.change(name, { target: { value: '123' } })
+        fireEvent.change(size, { target: { value: 'X' } }) // BAD VALUE
+      }, waitForOptions)
+      await waitFor(() => expect(submit).toBeDisabled())
+
+      await waitFor(() => {
+        fireEvent.change(name, { target: { value: '123' } })
+        fireEvent.change(size, { target: { value: 'L' } })
+      }, waitForOptions)
+      await waitFor(() => expect(submit).toBeEnabled())
+    })
     test('[10] Validation of `fullName` renders correct error message', async () => {
       const validationError = 'full name must be at least 3 characters'
 
@@ -210,6 +240,4 @@ describe('Sprint 7 Challenge Codegrade Tests', () => {
       await waitFor(() => {
         expect(screen.queryByText(validationError, queryOptions)).not.toBeInTheDocument()
       }, waitForOptions)
-    })
-  })
-})
+   
