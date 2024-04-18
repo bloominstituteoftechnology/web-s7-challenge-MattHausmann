@@ -57,7 +57,7 @@ export default function Form() {
   }
   useEffect(() => {
     if(!isFirstRender.current) {
-      formSchema.validate({fullName: fullName}).then(setNameErr('')).catch((err) => {setNameErr(err.message)});
+      formSchema.validate({fullName: fullName.trim()}).then(setNameErr('')).catch((err) => {setNameErr(err.message)});
     }
   }, [fullName])
 
