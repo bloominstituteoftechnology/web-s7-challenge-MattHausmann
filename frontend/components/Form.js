@@ -54,8 +54,12 @@ export default function Form() {
 
   let handleNameEntry = (nameEntry) => {
     setFullName(nameEntry.target.value);
-    formSchema.validate({fullName: nameEntry.target.value}).then(setNameErr('')).catch((err) => {setNameErr(err.message)});
   }
+  useEffect(() => {
+    if(!isFirstRender.current) {
+      formSchema.validate({fullName: fullName}).then(setNameErr('')).catch((err) => {setNameErr(err.message)});
+    }
+  }, [fullName])
 
   let handleSizeEntry = (sizeEntry) => {
     setPizzaSize(sizeEntry.target.value);
