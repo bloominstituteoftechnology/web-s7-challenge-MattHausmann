@@ -101,7 +101,22 @@ export default function Form() {
         console.log(err.data.message);
         setFailure(err.data.message);
       });
+      document.getElementById('fullName').value = '';
+      setFullName('');
+      document.getElementById('size').value='';
+      setPizzaSize('');
+      setToppingsList([]);
+      const toppingInput = document.getElementById('toppingInput');
+      for(let i = 0; i < toppingInput.children.length; i++) {
+        console.log('aaaa');
+        toppingInput.children[i].querySelector('input').checked = false;
+      }
+
+
+      isFirstRender.current = true;
   }
+
+  
 
 
   useEffect(() => {
