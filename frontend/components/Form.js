@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react'
+import * as yup from 'yup';
 
 // 👇 Here are the validation errors you will use with Yup.
 const validationErrors = {
@@ -8,6 +9,10 @@ const validationErrors = {
 }
 
 // 👇 Here you will create your schema.
+const formSchema = yup.object().shape({
+  fullName: yup.string().min(3,validationErrors.fullNameTooShort).max(20, validationErrors.fullNameTooLong),
+  size: yup.string().matches('[SML]', validationErrors.sizeIncorrect)
+});
 
 // 👇 This array could help you construct your checkboxes using .map in the JSX.
 const toppings = [
@@ -19,6 +24,25 @@ const toppings = [
 ]
 
 export default function Form() {
+
+  const [fullName, setFullName] = useState('');
+  const [nameErr, setNameErr] = useState('');
+
+  const [size, setSize] = useState('');
+  const [sizeErr, setSizeErr] = useState('');
+
+  let handleNameEntry = (nameEntry) => {
+    setFullName(nameEntry.target.value);
+    formSchema.validate({fullName: nameEntry.target.value}).then(setNameErr('')).catch((err) => {setNameErr(err.message)});
+  }
+
+  let handleSizeEntry = (sizeEntry) => {
+    console.log('handling size entry');
+    console.log(sizeEntry.target.value);
+    setSize(sizeEntry.size);
+    formSchema.validate({size: sizeEntry.target.value})    .then(setSizeErr('')).catch((err) => {setSizeErr(err.message)});
+  }
+
   return (
     <form>
       <h2>Order Your Pizza</h2>
@@ -28,31 +52,33 @@ export default function Form() {
       <div className="input-group">
         <div>
           <label htmlFor="fullName">Full Name</label><br />
-          <input placeholder="Type full name" id="fullName" type="text" />
+          <input placeholder="Type full name" id="fullName" type="text" value = {fullName} onChange = {handleNameEntry} />
         </div>
-        {true && <div className='error'>Bad value</div>}
+        {nameErr && <div className='error'>{nameErr}</div>}
       </div>
 
       <div className="input-group">
         <div>
           <label htmlFor="size">Size</label><br />
-          <select id="size">
-            <option value="">----Choose Size----</option>
-            {/* Fill out the missing options */}
+          <select id="size" onChange = {handleSizeEntry}>
+          <option value="">----Choose Size----</option>
+          <option value="S">Small</option>
+          <option value="M">Medium</option>
+          <option value="L">Large</option>
           </select>
         </div>
-        {true && <div className='error'>Bad value</div>}
+        {sizeErr && <div className='error'>{sizeErr}</div>}
       </div>
 
       <div className="input-group">
         {/* 👇 Maybe you could generate the checkboxes dynamically */}
-        <label key="1">
-          <input
-            name="Pepperoni"
-            type="checkbox"
-          />
-          Pepperoni<br />
-        </label>
+        {toppings.map((topping) => 
+        (<label           key={topping.topping_id}>
+          <input name={topping.text} type="checkbox" />
+          {topping.text} <br/> 
+          </label>)
+        )
+        }
       </div>
       {/* 👇 Make sure the submit stays disabled until the form validates! */}
       <input type="submit" />
