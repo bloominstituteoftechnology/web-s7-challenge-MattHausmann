@@ -1,4 +1,5 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, useRef } from 'react';
+import axios from 'axios';
 import * as yup from 'yup';
 
 // 👇 Here are the validation errors you will use with Yup.
@@ -28,10 +29,28 @@ export default function Form() {
   const [fullName, setFullName] = useState('');
   const [nameErr, setNameErr] = useState('');
 
-  const [size, setSize] = useState('');
+  const [pizzaSize, setPizzaSize] = useState('');
   const [sizeErr, setSizeErr] = useState('');
 
   const [toppingsList, setToppingsList] = useState([]);
+
+  const [values, setValues] = useState({ password: "", accept: false });
+  const [errors, setErrors] = useState({ password: "", accept: "" });
+  const [inputEnabled, setInputEnabled] = useState(false);
+
+  // New state below:
+  const [success, setSuccess] = useState("");
+  const [failure, setFailure] = useState("");
+
+  const isFirstRender = useRef(true);
+
+  useEffect(() => {
+    if(pizzaSize && !sizeErr && fullName && !nameErr) {
+      setInputEnabled(true);
+    } else {
+      setInputEnabled(false);
+    }
+  }, [pizzaSize, sizeErr, fullName, nameErr]);
 
   let handleNameEntry = (nameEntry) => {
     setFullName(nameEntry.target.value);
@@ -39,19 +58,21 @@ export default function Form() {
   }
 
   let handleSizeEntry = (sizeEntry) => {
-    console.log('handling size entry');
-    console.log(sizeEntry.target.value);
-    setSize(sizeEntry.size);
-    formSchema.validate({size: sizeEntry.target.value})    .then(setSizeErr('')).catch((err) => {setSizeErr(err.message)});
+    setPizzaSize(sizeEntry.target.value);
   }
+
+  useEffect(() => {
+    if(!isFirstRender.current)  {
+      formSchema.validate({size: pizzaSize}).then(setSizeErr('')).catch((err) => {setSizeErr(err.message)});
+    }
+  }, [pizzaSize])
+  
+
+
 
 
   let handleToppingEntry = (toppingEntry) => {
     const toppingInput = document.getElementById('toppingInput');
-
-      console.log(toppingInput.children.length);
-      console.log('.................................');
-
       const result = [];
 
       for(let i = 0; i < toppingInput.children.length; i++) {
@@ -60,15 +81,39 @@ export default function Form() {
           result.push(currentCheckbox.name);
         }
       }
-      console.log(result);
       setToppingsList(result);
   }
+
+  let handleSubmit = (evt) => {
+    let URL = 'http://localhost:9009/api/order';
+    let values = {}
+    values.fullName = fullName;
+    values.size = pizzaSize;
+    values.toppings = toppingsList;
+    evt.preventDefault();
+    axios
+      .post(URL, values)
+      .then((res) => {
+        console.log(res.data.message);
+        setSuccess(res.data.message);
+      })
+      .catch((err) => {
+        console.log(err.data.message);
+        setFailure(err.data.message);
+      });
+  }
+
+
+  useEffect(() => {
+    isFirstRender.current = false;
+    return;
+  }, []);
 
   return (
     <form>
       <h2>Order Your Pizza</h2>
-      {true && <div className='success'>Thank you for your order!</div>}
-      {true && <div className='failure'>Something went wrong</div>}
+      {success && <div className='success'>{success}</div>}
+      {failure && <div className='failure'>{failure}</div>}
 
       <div className="input-group">
         <div>
@@ -105,7 +150,7 @@ export default function Form() {
         }
       </div>
       {/* 👇 Make sure the submit stays disabled until the form validates! */}
-      <input type="submit" />
+      <input type="submit" disabled={!inputEnabled} onClick = {handleSubmit}/>
     </form>
   )
 }
